@@ -1,3 +1,7 @@
+import os
+
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"  # Fix for OpenMP error
+
 import torch
 import torch.nn as nn
 from torchvision import transforms
