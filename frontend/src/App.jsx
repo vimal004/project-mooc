@@ -1,5 +1,49 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { UploadCloud, AlertCircle, Loader } from "lucide-react";
+
+// TypeWriter component for smooth text animation
+const TypeWriter = ({ text }) => {
+  const [displayedText, setDisplayedText] = useState("");
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (currentIndex < text.length) {
+      const timer = setTimeout(() => {
+        setDisplayedText((prev) => prev + text[currentIndex]);
+        setCurrentIndex((prev) => prev + 1);
+      }, 20); // Adjust speed here
+      return () => clearTimeout(timer);
+    }
+  }, [currentIndex, text]);
+
+  // Format text to handle markdown-style formatting
+  const formatText = (text) => {
+    const lines = text.split("\n");
+    return lines.map((line, index) => {
+      // Handle bold text for headings (e.g., "**Treatment:**")
+      const headingMatch = line.match(/^\*\*(.*?)\*\*/);
+      if (headingMatch) {
+        const heading = headingMatch[1];
+        const rest = line.slice(headingMatch[0].length);
+        return (
+          <div key={index} className="mb-2">
+            <span className="font-bold text-gray-900">{heading}</span>
+            <span>{rest}</span>
+          </div>
+        );
+      }
+      // Remove unnecessary double asterisks within text
+      const cleanedLine = line.replace(/\*\*(.*?)\*\*/g, "$1");
+      return (
+        <div key={index} className="mb-2">
+          {cleanedLine}
+        </div>
+      );
+    });
+  };
+
+  return <div className="prose">{formatText(displayedText)}</div>;
+};
 
 const App = () => {
   const [file, setFile] = useState(null);
@@ -10,6 +54,7 @@ const App = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
   const [preview, setPreview] = useState(null);
+  const [showResponse, setShowResponse] = useState(false);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -59,6 +104,7 @@ const App = () => {
 
     setIsGenerating(true);
     setError("");
+    setShowResponse(false);
 
     try {
       const response = await fetch("http://localhost:5000/gemini", {
@@ -70,6 +116,7 @@ const App = () => {
       });
       const data = await response.json();
       setAI(data.response);
+      setShowResponse(true);
     } catch (error) {
       console.error("Error generating content:", error);
       setError("Error generating content. Please try again.");
@@ -179,12 +226,14 @@ const App = () => {
             </button>
           </form>
 
-          {ai && (
+          {showResponse && ai && (
             <div className="mt-6 p-4 bg-gray-50 rounded-lg animate-fade-in">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 AI Response
               </h3>
-              <p className="text-gray-700 whitespace-pre-wrap">{ai}</p>
+              <div className="text-gray-700">
+                <TypeWriter text={ai} />
+              </div>
             </div>
           )}
         </div>
