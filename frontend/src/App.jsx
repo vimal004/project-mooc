@@ -4,6 +4,8 @@ import axios from "axios";
 function App() {
   const [file, setFile] = useState(null);
   const [prediction, setPrediction] = useState("");
+  const [prompt, setPrompt] = useState(""); 
+  const [ai, setAI] = useState(""); 
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -37,6 +39,25 @@ function App() {
     }
   };
 
+  const gemini = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios
+        .post("http://localhost:5000/gemini", {
+          prompt: `${prediction} + ${prompt}`,
+        })
+        .then((response) => {
+          console.log(response.data);
+          setAI(response.data.response);  
+        })
+        .catch((error) => {
+          console.error("Error generating content:", error);
+        });
+    } catch (error) {
+      console.error("Error generating content:", error);
+    }
+  };
+
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
       <h1>Plant Disease Classification</h1>
@@ -49,6 +70,23 @@ function App() {
           <h2>Prediction: {prediction}</h2>
         </div>
       )}
+      <div>
+        <form onSubmit={gemini}>
+          <input
+            type="text"
+            placeholder="enter ur query"
+            onChange={(e) => {
+              setPrompt(e.target.value);
+              console.log(prompt);
+             }} 
+          ></input>
+          <button type="submit">Generate Content</button>
+        </form>
+      </div>
+      <div className="">
+        <h1>AI response</h1>
+        <p>{ai}</p> 
+      </div>
     </div>
   );
 }
