@@ -4,12 +4,15 @@ from PIL import Image
 import torch
 import torch.nn as nn
 from torchvision import transforms
+from flask_cors import CORS
+
 
 # Fix OpenMP error
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 # Initialize Flask app
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 
 # Define the model architecture (same as during training)
@@ -125,14 +128,23 @@ def predict():
         return jsonify({"error": "No file uploaded"}), 400
 
     file = request.files["file"]
-    image = Image.open(file.stream).convert("RGB")
-    image = preprocess_image(image)
-    prediction = predict_image(image)
-    return jsonify({"prediction": prediction})
+    try:
+        image = Image.open(file.stream).convert("RGB")
+        print("Image loaded successfully")  # Debugging
+        image = preprocess_image(image)
+        print("Image preprocessed successfully")  # Debugging
+        prediction = predict_image(image)
+        print("Prediction:", prediction)  # Debugging
+        return jsonify({"prediction": prediction})
+    except Exception as e:
+        print("Error:", e)  # Debugging
+        return jsonify({"error": str(e)}), 500
 
-@app.route("/hello", methods=["GET"])   
+
+@app.route("/hello", methods=["GET"])
 def hello():
-    return "Hello World!"   
+    return "Hello World!"
+
 
 # Run the Flask app
 if __name__ == "__main__":
