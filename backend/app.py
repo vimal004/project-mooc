@@ -144,6 +144,9 @@ def predict():
 def hello():
     return "Hello World!"
 
+@app.route("/",methods=["GET"])
+def home():
+    return "Welcome to Plant Disease Classification API"    
 
 # Run the Flask app
 if __name__ == "__main__":
