@@ -167,7 +167,7 @@ const App = () => {
 
     try {
       const response = await fetch(
-        "https://project-mooc-petx.vercel.app//gemini",
+        "https://project-mooc-petx.vercel.app/gemini",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
