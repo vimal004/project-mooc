@@ -6,13 +6,15 @@ import torch.nn as nn
 from torchvision import transforms
 from flask_cors import CORS
 
-
 # Fix OpenMP error
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
+
+# Lazy-load the model
+model = None
 
 
 # Define the model architecture (same as during training)
@@ -51,11 +53,6 @@ def ConvBlock(in_channels, out_channels, pool=False):
         layers.append(nn.MaxPool2d(4))
     return nn.Sequential(*layers)
 
-
-# Load the model
-model_path = "plant-disease-model-complete.pth"
-model = torch.load(model_path, map_location=torch.device("cpu"))
-model.eval()
 
 # Define the class names
 class_names = [
@@ -114,6 +111,12 @@ def preprocess_image(image):
 
 # Prediction function
 def predict_image(image):
+    global model
+    if model is None:
+        # Load model only when needed
+        model_path = "plant-disease-model-complete.pth"
+        model = torch.load(model_path, map_location=torch.device("cpu"))
+        model.eval()
     with torch.no_grad():
         output = model(image)
     _, predicted_idx = torch.max(output, 1)
@@ -130,14 +133,10 @@ def predict():
     file = request.files["file"]
     try:
         image = Image.open(file.stream).convert("RGB")
-        print("Image loaded successfully")  # Debugging
         image = preprocess_image(image)
-        print("Image preprocessed successfully")  # Debugging
         prediction = predict_image(image)
-        print("Prediction:", prediction)  # Debugging
         return jsonify({"prediction": prediction})
     except Exception as e:
-        print("Error:", e)  # Debugging
         return jsonify({"error": str(e)}), 500
 
 
@@ -148,4 +147,4 @@ def hello():
 
 # Run the Flask app
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
