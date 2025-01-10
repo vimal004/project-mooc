@@ -166,11 +166,14 @@ const App = () => {
     setAI(""); // Reset AI response for new animation
 
     try {
-      const response = await fetch("http://localhost:5000/gemini", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: `${prediction} + ${prompt}` }),
-      });
+      const response = await fetch(
+        "https://project-mooc-petx.vercel.app//gemini",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: `${prediction} + ${prompt}` }),
+        }
+      );
       const data = await response.json();
       setAI(data.response);
     } catch (error) {
