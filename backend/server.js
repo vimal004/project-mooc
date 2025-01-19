@@ -8,9 +8,6 @@ app.use(express.json());
 const cors = require("cors");
 app.use(cors());
 
-const prompt =
-  "Tomato___Tomato_mosaic_virus signs syptoms and control measures prevention techniques point wise short sweet crisp";
-
 app.post("/gemini", async (req, res) => {
   try {
     const { prompt } = req.body;
