@@ -6,15 +6,13 @@ import torch.nn as nn
 from torchvision import transforms
 from flask_cors import CORS
 
+
 # Fix OpenMP error
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)
-
-# Lazy-load the model
-model = None
+CORS(app)  # Enable CORS for all routes
 
 
 # Define the model architecture (same as during training)
@@ -54,46 +52,51 @@ def ConvBlock(in_channels, out_channels, pool=False):
     return nn.Sequential(*layers)
 
 
+# Load the model
+model_path = "plant-disease-model-complete.pth"
+model = torch.load(model_path, map_location=torch.device("cpu"))
+model.eval()
+
 # Define the class names
 class_names = [
-    "Apple - Apple scab",
-    "Apple - Black rot",
-    "Apple - Cedar apple rust",
-    "Apple - Healthy",
-    "Blueberry - Healthy",
-    "Cherry (including sour) - Powdery mildew",
-    "Cherry (including sour) - Healthy",
-    "Corn (maize) - Cercospora leaf spot Gray leaf spot",
-    "Corn (maize) - Common rust",
-    "Corn (maize) - Northern Leaf Blight",
-    "Corn (maize) - Healthy",
-    "Grape - Black rot",
-    "Grape - Esca (Black Measles)",
-    "Grape - Leaf blight (Isariopsis Leaf Spot)",
-    "Grape - Healthy",
-    "Orange - Haunglongbing (Citrus greening)",
-    "Peach - Bacterial spot",
-    "Peach - Healthy",
-    "Pepper, bell - Bacterial spot",
-    "Pepper, bell - Healthy",
-    "Potato - Early blight",
-    "Potato - Late blight",
-    "Potato - Healthy",
-    "Raspberry - Healthy",
-    "Soybean - Healthy",
-    "Squash - Powdery mildew",
-    "Strawberry - Leaf scorch",
-    "Strawberry - Healthy",
-    "Tomato - Bacterial spot",
-    "Tomato - Early blight",
-    "Tomato - Late blight",
-    "Tomato - Leaf Mold",
-    "Tomato - Septoria leaf spot",
-    "Tomato - Spider mites Two-spotted spider mite",
-    "Tomato - Target Spot",
-    "Tomato - Tomato Yellow Leaf Curl Virus",
-    "Tomato - Tomato mosaic virus",
-    "Tomato - Healthy",
+    "Apple___Apple_scab",
+    "Apple___Black_rot",
+    "Apple___Cedar_apple_rust",
+    "Apple___healthy",
+    "Blueberry___healthy",
+    "Cherry_(including_sour)___Powdery_mildew",
+    "Cherry_(including_sour)___healthy",
+    "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
+    "Corn_(maize)___Common_rust_",
+    "Corn_(maize)___Northern_Leaf_Blight",
+    "Corn_(maize)___healthy",
+    "Grape___Black_rot",
+    "Grape___Esca_(Black_Measles)",
+    "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
+    "Grape___healthy",
+    "Orange___Haunglongbing_(Citrus_greening)",
+    "Peach___Bacterial_spot",
+    "Peach___healthy",
+    "Pepper,_bell___Bacterial_spot",
+    "Pepper,_bell___healthy",
+    "Potato___Early_blight",
+    "Potato___Late_blight",
+    "Potato___healthy",
+    "Raspberry___healthy",
+    "Soybean___healthy",
+    "Squash___Powdery_mildew",
+    "Strawberry___Leaf_scorch",
+    "Strawberry___healthy",
+    "Tomato___Bacterial_spot",
+    "Tomato___Early_blight",
+    "Tomato___Late_blight",
+    "Tomato___Leaf_Mold",
+    "Tomato___Septoria_leaf_spot",
+    "Tomato___Spider_mites Two-spotted_spider_mite",
+    "Tomato___Target_Spot",
+    "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+    "Tomato___Tomato_mosaic_virus",
+    "Tomato___healthy",
 ]
 
 
@@ -111,12 +114,6 @@ def preprocess_image(image):
 
 # Prediction function
 def predict_image(image):
-    global model
-    if model is None:
-        # Load model only when needed
-        model_path = "plant-disease-model-complete.pth"
-        model = torch.load(model_path, map_location=torch.device("cpu"))
-        model.eval()
     with torch.no_grad():
         output = model(image)
     _, predicted_idx = torch.max(output, 1)
@@ -133,10 +130,14 @@ def predict():
     file = request.files["file"]
     try:
         image = Image.open(file.stream).convert("RGB")
+        print("Image loaded successfully")  # Debugging
         image = preprocess_image(image)
+        print("Image preprocessed successfully")  # Debugging
         prediction = predict_image(image)
+        print("Prediction:", prediction)  # Debugging
         return jsonify({"prediction": prediction})
     except Exception as e:
+        print("Error:", e)  # Debugging
         return jsonify({"error": str(e)}), 500
 
 
@@ -144,10 +145,7 @@ def predict():
 def hello():
     return "Hello World!"
 
-@app.route("/",methods=["GET"])
-def home():
-    return "Welcome to Plant Disease Classification API"    
 
 # Run the Flask app
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    app.run(debug=True, port=10000)
