@@ -129,7 +129,7 @@ const App = () => {
 
     try {
       const response = await fetch(
-        "https://project-mooc-1.onrender.com/predict",
+        "https://project-mooc-2.onrender.com/predict",
         {
           method: "POST",
           body: formData,
