@@ -168,7 +168,9 @@ const App = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: `Disease: ${prediction}, Related Query: ${prompt}` }),
+          body: JSON.stringify({
+            prompt: `Disease: ${prediction}, Related Query: ${prompt}`,
+          }),
         }
       );
       const data = await response.json();
