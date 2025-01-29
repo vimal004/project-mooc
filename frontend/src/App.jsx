@@ -128,10 +128,13 @@ const App = () => {
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://127.0.0.1:10000/predict", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        "https://project-mooc.onrender.com/predict",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
       const data = await response.json();
       setPrediction(data.prediction);
 
@@ -163,16 +166,13 @@ const App = () => {
     setAI(""); // Reset AI response for new animation
 
     try {
-      const response = await fetch(
-        "http://localhost:5000/gemini",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            prompt: `Disease: ${prediction}, Related Query: ${prompt}`,
-          }),
-        }
-      );
+      const response = await fetch("http://localhost:5000/gemini", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: `Disease: ${prediction}, Related Query: ${prompt}`,
+        }),
+      });
       const data = await response.json();
       setAI(data.response);
     } catch (error) {
