@@ -7,7 +7,7 @@ const app = express();
 app.use(express.json());
 const cors = require("cors");
 app.use(cors());
-
+//hello
 app.post("/gemini", async (req, res) => {
   try {
     const { prompt } = req.body;
